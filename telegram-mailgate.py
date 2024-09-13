@@ -2,20 +2,20 @@
 #
 #   telegram-mailgate is a software to send messages via telegram.
 #
-#	This file is part of the telegram-mailgate source code.
+#       This file is part of the telegram-mailgate source code.
 #
-#	telegram-mailgate is free software: you can redistribute it and/or modify
-#	it under the terms of the GNU General Public License as published by
-#	the Free Software Foundation, either version 3 of the License, or
-#	(at your option) any later version.
+#       telegram-mailgate is free software: you can redistribute it and/or modify
+#       it under the terms of the GNU General Public License as published by
+#       the Free Software Foundation, either version 3 of the License, or
+#       (at your option) any later version.
 #
-#	telegram-mailgate source code is distributed in the hope that it will be
+#       telegram-mailgate source code is distributed in the hope that it will be
 #   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#	GNU General Public License for more details.
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#       GNU General Public License for more details.
 #
-#	You should have received a copy of the GNU General Public License
-#	along with telegram-mailgate source code. If not,
+#       You should have received a copy of the GNU General Public License
+#       along with telegram-mailgate source code. If not,
 #   see <http://www.gnu.org/licenses/>.
 #
 
@@ -26,8 +26,9 @@ from configparser import ConfigParser
 import email
 import platform
 import telegram
+import asyncio
 
-if __name__ == '__main__':
+async def main():
     exit_code = 0
 
     arg_parser = argparse.ArgumentParser()
@@ -64,7 +65,6 @@ if __name__ == '__main__':
 
     logger.debug('%s: Validating API key', args.queue_id)
     api_key = cfg['api']['key']
-    bot = telegram.bot.Bot(api_key)
 
     logger.debug('%s: Reading message content', args.queue_id)
     raw_content = sys.stdin.read()
@@ -80,9 +80,16 @@ if __name__ == '__main__':
             print(e)
             exit_code = 69  # EX_UNAVAILABLE
         logger.info('%s: Sending to %s(%s)', args.queue_id, chat_id, rcpt)
-        if args.simple_header:
-            sender = getattr(args, 'from') or mail['From']
-            msg = 'New mail on {} from {}'.format(platform.node(), sender)
-            bot.sendMessage(chat_id=chat_id, text=msg)
-        bot.sendMessage(chat_id=chat_id, text=content)
+
+        bot = telegram.Bot(api_key)
+        async with bot:
+            if args.simple_header:
+                sender = getattr(args, 'from') or mail['From']
+                msg = 'New mail on {} from {}'.format(platform.node(), sender)
+                await bot.send_message(chat_id=chat_id, text=msg)
+            await bot.send_message(chat_id=chat_id, text=content)
+    
     exit(exit_code)
+
+if __name__ == '__main__':
+    asyncio.run(main())
