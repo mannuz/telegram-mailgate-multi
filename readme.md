@@ -42,8 +42,8 @@ The alias file (configured in `main.cf` as `core.aliases`) maps e-mail addresses
 **Example:**
 
 ```
-[email protected] 123456789,987654321
-[email protected] 555555555
+user1@raspberrypi 123456789,987654321
+user2@raspberrypi 555555555
 ```
 
 Spaces or commas are accepted as separators.
