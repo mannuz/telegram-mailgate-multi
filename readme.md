@@ -36,10 +36,11 @@ Installation
 Edit `/etc/telegram-mailgate/main.cf` to configure your telegram API key.
 Edit `/etc/telegram-mailgate/aliases` to configure the mapping between the recipients' addresses and the corresponding chat ID. The format is:
 
-    Adam 00000000
-    Bob 00000001
+    Adam 00000000,1111111
+    Bob 00000001 2222222
     Charlie 00000002
 
+Space or comma separated telegram chat ID;s.
 The format does not support comments nor empty lines.
 
 You can optionally edit `/etc/telegram-mailgate/logging.cf` to configure the logging. The default logs to syslog.
