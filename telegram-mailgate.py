@@ -89,10 +89,12 @@ async def main():
         async with bot:
             for chat_id in chat_ids:
                 if args.simple_header:
-                    sender = getattr(args, 'from') or mail['From']
-                    msg = 'New mail on {} from {}'.format(platform.node(), sender)
-                    await bot.send_message(chat_id=chat_id, text=msg)
-                await bot.send_message(chat_id=chat_id, text=content)
+                   sender = getattr(args, 'from') or mail['From']
+                   msg = 'New mail on {} från {}\n\n{}'.format(platform.node(), sender, content)
+                   await bot.send_message(chat_id=chat_id, text=msg)
+                else:
+                   await bot.send_message(chat_id=chat_id, text=content)
+
     
     exit(exit_code)
 
