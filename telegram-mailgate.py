@@ -61,7 +61,8 @@ async def main():
 
     logger.debug('%s: Reading aliases', args.queue_id)
     aliases = open(cfg['core']['aliases'], encoding='utf8').readlines()
-    aliases = dict([x.strip().split(' ') for x in aliases])
+    # Ändring: Tillåt flera chat-ID:n per mottagare
+    aliases = dict([x.strip().split(' ', 1) for x in aliases])
 
     logger.debug('%s: Validating API key', args.queue_id)
     api_key = cfg['api']['key']
@@ -75,19 +76,23 @@ async def main():
         content = mail.get_payload()
     for rcpt in args.to:
         try:
-            chat_id = aliases[rcpt]
+            chat_ids_str = aliases[rcpt]
+            # Ändring: Stöd för kommatecken eller mellanslag som separator
+            chat_ids = chat_ids_str.replace(',', ' ').split()
         except KeyError as e:
             print(e)
             exit_code = 69  # EX_UNAVAILABLE
-        logger.info('%s: Sending to %s(%s)', args.queue_id, chat_id, rcpt)
+            continue
+        logger.info('%s: Sending to %s(%s)', args.queue_id, chat_ids, rcpt)
 
         bot = telegram.Bot(api_key)
         async with bot:
-            if args.simple_header:
-                sender = getattr(args, 'from') or mail['From']
-                msg = 'New mail on {} from {}'.format(platform.node(), sender)
-                await bot.send_message(chat_id=chat_id, text=msg)
-            await bot.send_message(chat_id=chat_id, text=content)
+            for chat_id in chat_ids:
+                if args.simple_header:
+                    sender = getattr(args, 'from') or mail['From']
+                    msg = 'New mail on {} from {}'.format(platform.node(), sender)
+                    await bot.send_message(chat_id=chat_id, text=msg)
+                await bot.send_message(chat_id=chat_id, text=content)
     
     exit(exit_code)
 
